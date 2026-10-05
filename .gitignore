@@ -1,0 +1,7 @@
+bin/
+obj/
+*.user
+.vs/
+appsettings.Local.json
+publish/
+deploy.zip
