@@ -5,3 +5,5 @@ obj/
 appsettings.Local.json
 publish/
 deploy.zip
+# Windows "Mark of the Web" files that appear when copying into WSL
+*:Zone.Identifier
