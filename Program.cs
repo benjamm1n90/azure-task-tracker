@@ -50,8 +50,25 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// ---- Web UI: serve the HTML/CSS/JS in wwwroot/ -----------------------------
+// UseDefaultFiles makes "/" serve wwwroot/index.html; UseStaticFiles serves the
+// rest (style.css, app.js). Order matters: both must come before MapControllers.
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.UseAuthorization();
 app.MapControllers();
+
+// ---- Who is signed in? ------------------------------------------------------
+// App Service Authentication ("Easy Auth") sits in front of the app, handles the
+// Microsoft sign-in, and then adds the user's name as a request header. We just
+// echo it back so the page can show "signed in as ...". DISPLAY ONLY: never make
+// a security decision from this header (locally, anyone could send it). Real
+// enforcement is done by Easy Auth, which rejects unsigned-in requests before
+// they reach this code.
+app.MapGet("/api/me", (HttpContext ctx) =>
+    Results.Ok(new { name = ctx.Request.Headers["X-MS-CLIENT-PRINCIPAL-NAME"].FirstOrDefault() }));
 
 // Simple liveness/readiness endpoint — also shows up nicely as an Application
 // Insights availability check target later on.
