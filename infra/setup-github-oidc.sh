@@ -35,12 +35,26 @@ for i in 1 2 3 4 5; do
 done
 
 echo "Trusting tokens issued to pushes on main of ${REPO}..."
-az ad app federated-credential create --id "$APP_OBJECT_ID" --parameters "{
-  \"name\": \"github-main\",
-  \"issuer\": \"https://token.actions.githubusercontent.com\",
-  \"subject\": \"repo:${REPO}:ref:refs/heads/main\",
-  \"audiences\": [\"api://AzureADTokenExchange\"]
-}" >/dev/null
+add_credential() {  # $1 = credential name, $2 = subject
+  az ad app federated-credential create --id "$APP_OBJECT_ID" --parameters "{
+    \"name\": \"$1\",
+    \"issuer\": \"https://token.actions.githubusercontent.com\",
+    \"subject\": \"$2\",
+    \"audiences\": [\"api://AzureADTokenExchange\"]
+  }" >/dev/null
+}
+# Classic subject format (names only)
+add_credential "github-main" "repo:${REPO}:ref:refs/heads/main"
+
+# Newer repos present immutable IDs in the subject: repo:owner@ownerId/repo@repoId:...
+# Azure matches the subject exactly, so add that form too when the repo is public.
+OWNER="${REPO%%/*}"; NAME="${REPO##*/}"
+if IDS=$(curl -fsS "https://api.github.com/repos/${REPO}" 2>/dev/null | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['owner']['id'], d['id'])" 2>/dev/null); then
+  read -r OWNER_ID REPO_ID <<<"$IDS"
+  add_credential "github-main-by-id" "repo:${OWNER}@${OWNER_ID}/${NAME}@${REPO_ID}:ref:refs/heads/main"
+else
+  echo "  (couldn't look up repo IDs; if login later fails with 'No matching federated identity record', add a credential using the subject shown in the error)"
+fi
 
 cat <<EOF
 
