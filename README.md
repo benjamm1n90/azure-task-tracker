@@ -4,6 +4,13 @@ A small task tracker built with **C# / ASP.NET Core 10** (REST API plus a plain 
 
 > Learning project: runs on free / low-cost tiers, not a production system.
 
+<p align="center">
+  <img src="docs/screenshot-dark.png" alt="Task Tracker in the default dark theme" width="49%">
+  <img src="docs/screenshot-light.png" alt="Task Tracker in the light theme" width="49%">
+</p>
+
+The deployed app sits behind **Microsoft Entra ID sign-in** (App Service Authentication), so it isn't open to the public. The screenshots above show the interface with sample data. The theme toggle is in the top right.
+
 ## Architecture
 
 ```mermaid
